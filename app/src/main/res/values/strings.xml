@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Bluetooth lefrut</string>
+    <string name="bluetooth_on_off">Вкл/Выкл Bluetooth</string>
+    <string name="bluetooth_off">Bluetooth выключен</string>
+    <string name="start_search">Search</string>
+    <string name="bt_not_supported">Bluetooth не поддерживается</string>
+</resources>
