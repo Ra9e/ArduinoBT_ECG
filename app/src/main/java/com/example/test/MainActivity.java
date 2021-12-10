@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +22,9 @@ import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Set;
+
 public class MainActivity extends AppCompatActivity implements
         CompoundButton.OnCheckedChangeListener,
         AdapterView.OnItemClickListener,
@@ -29,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQ_ENABLE_BT = 10;
+    private static final int BT_BOUNDED = 21;
+    private static final int BT_SEARCH = 22;
     private FrameLayout frameMessage;
     private LinearLayout frameControls;
 
@@ -38,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements
     private ListView listBtDevices;
 
     private BluetoothAdapter bluetoothAdapter;
+    private BtListAdapter listAdapter;
+    private ArrayList<BluetoothDevice> bluetoothDevices;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements
         btnEnableSearch.setOnClickListener(this);
         listBtDevices.setOnItemClickListener(this);
 
+        bluetoothDevices = new ArrayList<>();
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         if (bluetoothAdapter == null) {
@@ -67,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements
         if (bluetoothAdapter.isEnabled()) {
             showFrameControls();
             switchEnableBt.setChecked(true);
+            setListAdapter(BT_BOUNDED);
         }
     }
 
@@ -98,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements
                 public void onActivityResult(ActivityResult result) {
                     if (result.getResultCode() == RESULT_OK && bluetoothAdapter.isEnabled()) {
                         showFrameControls();
+                        setListAdapter(BT_BOUNDED);
                     }
                     else if (result.getResultCode() == RESULT_CANCELED) {
                         enableBt(true);
@@ -125,4 +137,28 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private void setListAdapter(int type) {
+        bluetoothDevices.clear();
+        switch (type) {
+            case BT_BOUNDED:
+                bluetoothDevices = getBoundedBtDevices();
+                listAdapter = new BtListAdapter(this, bluetoothDevices, R.drawable.ic_bluetooth_bounded_device);
+                break;
+            case BT_SEARCH:
+                listAdapter = new BtListAdapter(this, bluetoothDevices, R.drawable.ic_bluetooth_search_device);
+                break;
+        }
+        listBtDevices.setAdapter(listAdapter);
+    }
+
+    private ArrayList<BluetoothDevice> getBoundedBtDevices() {
+        Set<BluetoothDevice> deviceSet = bluetoothAdapter.getBondedDevices();
+        ArrayList<BluetoothDevice> tmpArrayList = new ArrayList<>();
+        if (deviceSet.size() > 0) {
+            for (BluetoothDevice device : deviceSet) {
+                tmpArrayList.add(device);
+            }
+        }
+        return tmpArrayList;
+    }
 }
